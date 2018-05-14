@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--Import Google Icon Font-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!--Import materialize.css-->
+  <!--Let browser know website is optimized for mobile-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>天气预报可视化</title>
+</head>
+
+<body>
+  <div class="row">
+    <div id="main" style="width: 600px; height: 400px;"></div>
+    <div class="input-field col s5">
+      <input id="id-city-form" placeholder="深圳" id="first_name" type="text" class="validate">
+      <label for="first_name">输入要查询的城市名,回车即可</label>
+      <div id='id-search-button' class="waves-effect waves-light btn-small">查询</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.bootcss.com/echarts/4.0.4/echarts-en.common.js"></script>
+  <script type="text/javascript">
+    const NOW = new Date()
+    const TODAY = '' + NOW.getFullYear() + NOW.getMonth() + NOW.getDate()
+    const TOMORROW = '' + NOW.getFullYear() + NOW.getMonth() + (NOW.getDate() + 1)
+    const TWODAYAFTER = '' + NOW.getFullYear() + NOW.getMonth() + (NOW.getDate() + 2)
+    const OPTION = {
+      title: {
+        text: '城市天气'
+      },
+      tooltip: {},
+      legend: {
+        data: ['天气预报']
+      },
+      xAxis: {
+        // data: ["2018-04-02", "2018-05-03", "2018-05-04"]
+        data: [TODAY, TOMORROW, TWODAYAFTER]
+      },
+      yAxis: {},
+      series: [{
+        name: '最高温度',
+        type: 'bar',
+        data: [15, 20, 36]
+      }, {
+        name: '最低温度',
+        type: 'bar',
+        data: [15, 20, 36]
+      }]
+    }
+    let log = console.log.bind(console)
+    let getWeather = (city, OPTION) => {
+      let test_weather_url = "https://free-api.heweather.com/s6/weather/forecast?location=beijing&username=HE1805021135171516&key=1abe8910777f47e3be6740b3234227d5"
+      let weather_url = `https://free-api.heweather.com/s6/weather/forecast?location=${city}&username=HE1805021135171516&key=1abe8910777f47e3be6740b3234227d5`
+      let method = "GET"
+      ajax(method, weather_url, "", (r) => {
+        let response = JSON.parse(r)
+        let details = response.HeWeather6[0].daily_forecast
+        for (var i = 0; i < details.length; i++) {
+          let data = details[i]
+          OPTION.title.text = city
+          OPTION.series[0].data[i] = data.tmp_max
+          OPTION.series[1].data[i] = data.tmp_min
+          OPTION.xAxis.data[i] = data.date
+        }
+        drawChart(OPTION)
+      })
+      console.log(OPTION)
+      return OPTION
+    }
+    const ajax = (method, path, data, callback) => {
+      let r = new XMLHttpRequest
+      r.open(method, path, true)
+      r.onreadystatechange = function() {
+        if (r.readyState == 4) {
+          callback(r.response)
+        }
+      }
+      r.send(data)
+    }
+    let drawChart = (OPTION) => {
+      let element = document.querySelector("#main")
+      var myChart = echarts.init(element);
+      myChart.setOption(OPTION);
+    }
+    let value2Chart = () => {
+      let form = document.querySelector("#id-city-form")
+      log(form.value)
+      let value = form.value
+      if (value == "") {
+        value = form.placeholder
+      }
+      getWeather(value, OPTION)
+    }
+    let bindButton = () => {
+      let button = document.querySelector("#id-search-button")
+      button.addEventListener(
+        "click",
+        () => {
+          value2Chart()
+        }
+      )
+    }
+    let bindForm = () => {
+      let form = document.querySelector("#id-city-form")
+      form.addEventListener(
+        "keydown",
+        (event) => {
+          let key = event.keyCode
+          log(key)
+          if (key == 13) {
+            value2Chart()
+          }
+        }
+      )
+    }
+    let bindElement = () => {
+      bindForm()
+      bindButton()
+    }
+    // 指定图表的配置项和数据
+    let main = () => {
+      // getWeather("成都", OPTION)
+      getWeather("深圳", OPTION)
+      // getWeather("shanghai", OPTION)
+      bindForm()
+    }
+    main()
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+</body>
+
+</html>
+
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--Import Google Icon Font-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!--Import materialize.css-->
+  <!--Let browser know website is optimized for mobile-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>代办清单</title>
+</head>
+
+<body>
+  <div id="id-div-todo-container" class="container">
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+  <script type="text/javascript">
+    // utility
+    var log = console.log.bind(console)
+    var e = selector => document.querySelector(selector)
+    var appendHtml = (element, html) => element.insertAdjacentHTML('beforeend', html)
+    // data init
+    let Todolist = [{
+        'task': '洗澡'
+      },
+      {
+        'task': '吃饭'
+      },
+    ]
+    var showTodo = (Todolist) => {
+      response = Todolist
+      log(Todolist)
+      var container = e('#id-div-todo-container')
+      for (let i = 0; i < response.length; i++) {
+        var fulltodo = templateTodo(response[i])
+        appendHtml(container, fulltodo)
+      }
+    }
+    var showOneTodo = (response) => {
+      response = JSON.parse(response)
+      var contain = e('#id-div-todo-container')
+      var fulltodo = templateTodo(response)
+      appendHtml(contain, fulltodo)
+    }
+    var templateTodo = (todo) => {
+      var task = todo.task
+      var id = Todolist.indexOf(todo)
+      var t =
+        `<div class="todo-cell collection" data-id="${id}">
+        <div class="collection-item">
+            <button class="todo-edit">编辑</button>
+            <button class="todo-delete">删除</button>
+            <span class="todo-task">${task}</span>
+        </div>
+        </div>`
+      return t
+    }
+    var AddButton = (element) => {
+      var content = `<div>
+        <input id="id-input-task">
+        <button id="id-button-add" class="todo-add">添加</button>
+    </div>`
+      appendHtml(element, content)
+    }
+    var BindAdd = (element) => {
+      element.addEventListener('click', function() {
+        console.log('success')
+        var input = e('#id-input-task')
+        var name = input.value
+        var data = {
+          'task': name
+        }
+        Todolist.push(data)
+        log(Todolist)
+        start()
+      })
+    }
+    var bindEventUpdate = () => {
+      // 绑定 keydown 事件, 当用户按键的时候触发
+      var container = e('#id-div-todo-container')
+      container.addEventListener('keydown', function(event) {
+        var self = event.target
+        if (self.classList.contains('todo-task')) {
+          if (event.key == 'Enter') {
+            log('按了回车键', event)
+            // 取消事件的默认行为, 回车键在编辑标签内容的时候会默认换行
+            event.preventDefault()
+            self.contentEditable = false
+            var todoCell = self.closest('.todo-cell')
+            var todoId = todoCell.dataset.id
+            var data = {
+              'task': self.innerHTML,
+            }
+            Todolist[todoId] = data
+            start()
+          }
+        }
+      })
+    }
+    var bindEventDelete = () => {
+      var container = e('#id-div-todo-container')
+      container.addEventListener('click', function(event) {
+        log(event)
+        var element = event.target
+        if (element.classList.contains('todo-delete')) {
+          var todo = element.closest('.todo-cell')
+          log(todo)
+          var todoid = todo.dataset.id
+          log('id', todoid)
+          Todolist.pop(todoid)
+          log(Todolist)
+          start()
+        }
+      })
+    }
+    var bindUpdateButton = () => {
+      var container = e('#id-div-todo-container')
+      container.addEventListener('click', function(event) {
+        var element = event.target
+        console.log(element)
+        if (element.classList.contains('todo-edit')) {
+          console.log('you have clicked edit')
+          var todo = element.closest('.todo-cell')
+          var todotask = todo.querySelector('.todo-task')
+          todotask.contentEditable = true
+          todotask.focus()
+        }
+      })
+    }
+    let start = () => {
+      var element = e('#id-div-todo-container')
+      element.innerHTML = ""
+      AddButton(element)
+      showTodo(Todolist)
+      var addbutton = e('#id-button-add')
+      BindAdd(addbutton)
+      bindEventDelete()
+      bindUpdateButton()
+      bindEventUpdate()
+    }
+    var main = () => {
+      start()
+    }
+    main()
+  </script>
+</body>
+
+</html>
